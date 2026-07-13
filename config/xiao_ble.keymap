@@ -9,9 +9,10 @@
  * MISO are both routed to that same pin in pinctrl below since the sensor
  * only has one bidirectional data line). MOT is the motion/irq line.
  *
- * D3/NRESET is intentionally not wired up in software: the current driver
- * has no reset-gpios property at all, and the PMW3610 has a built-in weak
- * pull-up on its RESET pin, so it doesn't need to be actively driven.
+ * D3/NRESET is not wired up in software: the current driver has no
+ * reset-gpios property at all. It's tied directly to 3.3V in hardware
+ * instead of relying on the PMW3610's internal weak pull-up alone, which
+ * turned out to not be reliable enough on this build.
  *
  * D4/D5 are xiao_ble's default I2C1 (SDA/SCL) pins, and the board enables
  * i2c1 out of the box. That would have stolen D4 away from MOT, so i2c1
@@ -68,9 +69,9 @@
         x-input-code = <INPUT_REL_X>;
         y-input-code = <INPUT_REL_Y>;
 
-        /* Uncomment to fix cursor orientation for your mounting: */
+        /* Uncomment to further adjust cursor orientation if needed: */
         // swap-xy;
-        // invert-x;
+        invert-x;
         // invert-y;
     };
 };
