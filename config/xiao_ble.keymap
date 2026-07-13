@@ -1,0 +1,84 @@
+/*
+ * Standalone PMW3610 trackball on Xiao BLE, no shield.
+ *
+ * Wiring (Xiao pin -> PMW3610-PCB pin):
+ *   D0 -> SDIO   D1 -> SCLK   D3 -> NCS   D4 -> NRESET   D5 -> MOT
+ *
+ * badjeff's driver talks SPI, not raw bit-banged GPIO: SCLK/SDIO/NCS map to
+ * a real SPI bus (SDIO is wired to a single physical line, but MOSI and
+ * MISO are both routed to that same pin in pinctrl below since the sensor
+ * only has one bidirectional data line). MOT is the motion/irq line.
+ *
+ * D4/NRESET is intentionally not wired up in software: the current driver
+ * has no reset-gpios property at all, and the PMW3610 has a built-in weak
+ * pull-up on its RESET pin, so it doesn't need to be actively driven.
+ */
+
+#include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 3)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 2)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 2)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 3)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 2)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 2)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi2 {
+    compatible = "nordic,nrf-spim";
+    status = "okay";
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; /* D3 = NCS */
+
+    trackball: trackball@0 {
+        compatible = "pixart,pmw3610-alt";
+        status = "okay";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* D5 = MOT */
+
+        cpi = <600>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+
+        /* Uncomment to fix cursor orientation for your mounting: */
+        // swap-xy;
+        // invert-x;
+        // invert-y;
+    };
+};
+
+/ {
+    trackball_listener: trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        /* No physical buttons wired up. ZMK still requires a keymap node
+         * to build, so this default layer just holds a placeholder. */
+        default_layer {
+            bindings = <&none>;
+        };
+    };
+};
