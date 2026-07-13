@@ -2,20 +2,20 @@
  * Standalone PMW3610 trackball on Xiao BLE, no shield.
  *
  * Wiring (Xiao pin -> PMW3610-PCB pin):
- *   D0 -> SDIO   D1 -> SCLK   D3 -> NCS   D4 -> NRESET   D5 -> MOT
+ *   D0 -> SDIO   D1 -> SCLK   D2 -> NCS   D3 -> NRESET   D4 -> MOT
  *
  * badjeff's driver talks SPI, not raw bit-banged GPIO: SCLK/SDIO/NCS map to
  * a real SPI bus (SDIO is wired to a single physical line, but MOSI and
  * MISO are both routed to that same pin in pinctrl below since the sensor
  * only has one bidirectional data line). MOT is the motion/irq line.
  *
- * D4/NRESET is intentionally not wired up in software: the current driver
+ * D3/NRESET is intentionally not wired up in software: the current driver
  * has no reset-gpios property at all, and the PMW3610 has a built-in weak
  * pull-up on its RESET pin, so it doesn't need to be actively driven.
  *
  * D4/D5 are xiao_ble's default I2C1 (SDA/SCL) pins, and the board enables
- * i2c1 out of the box. That steals D5 away from MOT, so i2c1 must be
- * disabled below to free both pins for plain GPIO use.
+ * i2c1 out of the box. That would have stolen D4 away from MOT, so i2c1
+ * must be disabled below to free both pins for plain GPIO use.
  */
 
 #include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
@@ -54,14 +54,14 @@
     pinctrl-0 = <&spi2_default>;
     pinctrl-1 = <&spi2_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 29 GPIO_ACTIVE_LOW>; /* D3 = NCS */
+    cs-gpios = <&gpio0 28 GPIO_ACTIVE_LOW>; /* D2 = NCS */
 
     trackball: trackball@0 {
         compatible = "pixart,pmw3610-alt";
         status = "okay";
         reg = <0>;
         spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* D5 = MOT */
+        irq-gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* D4 = MOT */
 
         cpi = <600>;
         evt-type = <INPUT_EV_REL>;
