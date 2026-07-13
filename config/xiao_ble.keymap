@@ -12,6 +12,10 @@
  * D4/NRESET is intentionally not wired up in software: the current driver
  * has no reset-gpios property at all, and the PMW3610 has a built-in weak
  * pull-up on its RESET pin, so it doesn't need to be actively driven.
+ *
+ * D4/D5 are xiao_ble's default I2C1 (SDA/SCL) pins, and the board enables
+ * i2c1 out of the box. That steals D5 away from MOT, so i2c1 must be
+ * disabled below to free both pins for plain GPIO use.
  */
 
 #include <zephyr/dt-bindings/pinctrl/nrf-pinctrl.h>
@@ -20,6 +24,10 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/matrix_transform.h>
+
+&i2c1 {
+    status = "disabled";
+};
 
 &pinctrl {
     spi2_default: spi2_default {
