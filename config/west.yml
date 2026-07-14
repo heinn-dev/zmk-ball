@@ -4,6 +4,8 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: badjeff
       url-base: https://github.com/badjeff
+    - name: nuovotaka
+      url-base: https://github.com/nuovotaka
   projects:
     - name: zmk
       remote: zmkfirmware
@@ -14,5 +16,10 @@ manifest:
       remote: badjeff
       # Pinned commit (2026-04-16)
       revision: 44b4a76b74d293a93cec4ccb7e04cb8d29c10f93
+    - name: zmk-pointing-acceleration-alpha
+      remote: nuovotaka
+      # Pinned commit (latest as of 2026-07-14). Community "alpha" module,
+      # not an official ZMK feature.
+      revision: 780dfcd6b796063367893ff41e233773e12fb07c
   self:
     path: config

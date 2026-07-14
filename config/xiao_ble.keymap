@@ -25,6 +25,8 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/matrix_transform.h>
+#include <input/processors.dtsi>
+#include <behaviors/input_gestures_accel.dtsi>
 
 &i2c1 {
     status = "disabled";
@@ -76,10 +78,20 @@
     };
 };
 
+&pointer_accel {
+    input-type = <INPUT_EV_REL>;
+    codes = <INPUT_REL_X INPUT_REL_Y>;
+    sensitivity = <1000>;  /* 1.0x base speed - unchanged */
+    max-factor = <2000>;   /* 2.0x max speed boost at high velocity */
+    curve-type = <1>;      /* Mild curve */
+    sensor-dpi = <600>;    /* matches cpi = <600> on &trackball above */
+};
+
 / {
     trackball_listener: trackball_listener {
         compatible = "zmk,input-listener";
         device = <&trackball>;
+        input-processors = <&pointer_accel>;
     };
 
     /* No physical keys exist, but ZMK still needs a matrix transform to
